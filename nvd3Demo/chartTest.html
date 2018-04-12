@@ -3,11 +3,13 @@
         <script type="text/javascript" src="jquery.min.js"></script>
         <script type="text/javascript" src="d3.min.js"></script>
         <link href="nv.d3.min.css" rel="stylesheet">
-        <script type="text/javascript" src="nv.d3.min.js"></script>
-        <script type="text/css">
+        <style type="text/css">
+            #chart {
+                height: 210px;
+            }
             #chartCanvas {
                 background: #fefefe;
-                height: 300px;
+                height: 100%;
                 width: 100%;
                 border: 1px solid #777;
                 border-radius: 8px;
@@ -15,12 +17,19 @@
             }
             .dashed {
                 stroke-dasharray: 5, 5;
-            }              
-        </script>
+            }
+            .myPoint2 {
+                fill: red;
+            }  
+            .myPoint2:hover {
+                fill: red !important;
+            }       
+        </style>
+        <script type="text/javascript" src="nv.d3.min.js"></script>
         <script type="text/javascript">
             $(function() {
                 var chart = null;
-
+                var width = 900, height = 500;
                 nv.addGraph(function() {
                     chart = nv.models.lineChart()
                         .margin({
@@ -47,13 +56,38 @@
                         .tickFormat(d3.format('.02f'));
 
                     /* Done setting the chart up? Time to render it!*/
-                    var myData = sinAndCos(); //You need data...
+                    //var myData = sinAndCos(); //You need data...
+                    var myData = convertChartData(fakeData.anomaly_results);
 
                     d3.select(".nv-legendWrap")
                         .attr("transform","translate(0， 350)")
                     d3.select('#chart svg') //Select the <svg> element you want to render the chart in.   
                         .datum(myData) //Populate the <svg> element with chart data...
-                        .call(chart); //Finally, render the chart!
+                        .transition().attr('width', width).attr('height', height).duration(500)
+                        .call(chart)
+                        .each("end", function() {
+                            var data = d3.select('#chart svg').datum();
+                            console.log(data);
+                            d3.select('.nv-groups')
+                                .selectAll("circle.myPoint2")
+                                .data(data[0].values.filter(function(d) { return (d.y < d.y0 || d.y > d.y1); }))
+                                .enter().append("circle").attr("class", "myPoint2")
+                                .attr("cx", function(d) { return chart.xAxis.scale()(d.x); })
+                                .attr("cy", function(d) { return chart.yAxis.scale()(d.y); })
+                                .attr("r", 5)
+                                ;
+                            d3.selectAll('.nv-groups .nv-group.nv-series-0 .nv-point')
+                                .filter(function(d){
+                                    console.log("+++"+typeof d);
+                                    var d0 = d[0];
+                                    return (d0.y < d0.y0 || d0.y > d0.y1);
+                                })
+                                .attr("fill", "red")
+                                .attr("stroke", "red")
+                        })
+                        ; //Finally, render the chart!
+
+                nv.utils.windowResize(chart.update);
 
                     //Update the chart when window resizes.
                     nv.utils.windowResize(function() {
@@ -76,14 +110,15 @@
                             d3.selectAll("#cust-fill").remove();
                             d3.selectAll('.nv-group')
                             .each(function(d) {
-                                if (d.key === "Another sin wave") {
+                                if (d.fillArea) {
                                     var t = d3.select(this),
                                     d = t.datum().values;
                                     t.append("path")
                                     .attr("id", "cust-fill")
                                     .attr("d", area(d))
-                                    .style("fill", d.color)
-                                    .style("opacity", ".3");
+                                    .style("fill", '#8CD211')
+                                    .style("opacity", ".2")
+                                    .style("stroke-dasharray", "0,0");
                                 }
                             })
                         }, 100);
@@ -132,6 +167,297 @@
                         }
                     ];
                 }
+
+                var fakeData = {
+                    "anomaly_results": [
+                        [
+                            20170301,
+                            93718.0,
+                            51506.4784147901,
+                            171572.8230784702,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170302,
+                            50316.0,
+                            112782.94221255003,
+                            167115.90106526238,
+                            58449.983359837686,
+                            true
+                        ],
+                        [
+                            20170303,
+                            142484.0,
+                            78118.35275274997,
+                            134521.06996029255,
+                            21715.635545207377,
+                            true
+                        ],
+                        [
+                            20170304,
+                            177151.0,
+                            118911.39518066219,
+                            175826.3977359602,
+                            61996.39262536419,
+                            true
+                        ],
+                        [
+                            20170305,
+                            108031.0,
+                            159444.64866433336,
+                            212658.57106597244,
+                            106230.72626269428,
+                            false
+                        ],
+                        [
+                            20170306,
+                            63199.0,
+                            86248.48917676134,
+                            168548.03857483552,
+                            3948.9397786871705,
+                            false
+                        ],
+                        [
+                            20170307,
+                            55901.0,
+                            84228.14023638949,
+                            123287.49487818372,
+                            45168.78559459526,
+                            false
+                        ],
+                        [
+                            20170308,
+                            73134.0,
+                            79475.17230229439,
+                            135284.7356700287,
+                            23665.6089345601,
+                            false
+                        ],
+                        [
+                            20170309,
+                            72755.0,
+                            37281.050766745415,
+                            91095.99767890626,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170310,
+                            73359.0,
+                            145786.37471993125,
+                            206770.49547960912,
+                            84802.25396025338,
+                            true
+                        ],
+                        [
+                            20170311,
+                            82286.0,
+                            133738.88332231555,
+                            169090.9201749497,
+                            98386.84646968142,
+                            true
+                        ],
+                        [
+                            20170312,
+                            95361.0,
+                            44457.411086081986,
+                            125899.33367011219,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170313,
+                            55791.0,
+                            70848.07512303529,
+                            158578.30194828656,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170314,
+                            162374.0,
+                            35527.25999844489,
+                            147713.77041361656,
+                            0.0,
+                            true
+                        ],
+                        [
+                            20170315,
+                            152351.0,
+                            99959.96410466693,
+                            207044.43271714053,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170316,
+                            124701.0,
+                            125707.81704502471,
+                            143846.06271470265,
+                            107569.57137534677,
+                            false
+                        ],
+                        [
+                            20170317,
+                            114315.0,
+                            132657.5886565908,
+                            157265.8183287686,
+                            108049.35898441297,
+                            false
+                        ],
+                        [
+                            20170318,
+                            128808.0,
+                            130221.8041029777,
+                            133676.5555699186,
+                            126767.0526360368,
+                            false
+                        ],
+                        [
+                            20170319,
+                            221749.0,
+                            147295.12579406647,
+                            200611.27191649567,
+                            93978.97967163727,
+                            true
+                        ],
+                        [
+                            20170320,
+                            142048.0,
+                            152851.6660226856,
+                            318041.2690661986,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170321,
+                            144968.0,
+                            125270.61482582719,
+                            205657.9954404888,
+                            44883.23421116559,
+                            false
+                        ],
+                        [
+                            20170322,
+                            78857.0,
+                            172168.99946132573,
+                            342776.8301871607,
+                            1561.1687354907626,
+                            false
+                        ],
+                        [
+                            20170323,
+                            64461.0,
+                            117083.08401433038,
+                            202488.9631085014,
+                            31677.20492015936,
+                            false
+                        ],
+                        [
+                            20170324,
+                            61554.0,
+                            86196.06181123308,
+                            140669.2521552999,
+                            31722.87146716626,
+                            false
+                        ],
+                        [
+                            20170325,
+                            90724.0,
+                            81777.2281641035,
+                            104486.39087335739,
+                            59068.065454849595,
+                            false
+                        ],
+                        [
+                            20170326,
+                            121825.0,
+                            110929.66254031537,
+                            138124.59766478097,
+                            83734.72741584979,
+                            false
+                        ],
+                        [
+                            20170327,
+                            93818.0,
+                            135633.71883330995,
+                            311340.4106789243,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170328,
+                            124424.0,
+                            64645.220253194115,
+                            198031.1904988549,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170329,
+                            112812.0,
+                            88201.02222508616,
+                            195280.5537054043,
+                            0.0,
+                            false
+                        ],
+                        [
+                            20170330,
+                            104369.0,
+                            128324.60612686802,
+                            185360.13125808048,
+                            71289.08099565556,
+                            false
+                        ]
+                    ]
+                };
+                var reportData = {};
+                var niceDomain = {};
+                function convertChartData(result) {  
+                    reportData.actual = [];
+                    reportData.predicted = [];
+                    reportData.fillArea = [];
+                    niceDomain.max = result[0][3];
+                    niceDomain.min = result[0][4];
+                    for (var i = 0; i < result.length; i++) {
+                        reportData.actual.push({
+                            x: result[i][0],
+                            y: result[i][1],
+                            y0 : result[i][4], // minmum
+                            y1 : result[i][3] //maxmum
+                        });
+                        reportData.fillArea.push({
+                            x : result[i][0],
+                            y: result[i][2], // predicted
+                            y0 : result[i][4], // minmum
+                            y1 : result[i][3] // maxmum
+                        });
+                        if (result[i][4] < niceDomain.min) {
+                            niceDomain.min = result[i][4];
+                        }
+                        if (result[i][3] > niceDomain.max) {
+                            niceDomain.max = result[i][3];
+                        }
+                    }
+                    return [
+                        {
+                            values: reportData.actual,
+                            key: 'Actual Value',
+                            color: '#2D74DA' ,
+                            fillArea: false 
+                        },
+                        {
+                            values: reportData.fillArea, //values - represents the array of {x,y} data points
+                            key: 'Expected Value', //key  - the name of the series.
+                            color: '#8CD211' ,//color - optional: choose your own line color.
+                            fillArea: true, // fillArea - optional: when set true, the values should contains y1 and y0.
+                            classed: 'dashed',
+                            interactive: 'false'
+                        }
+                    ];
+                }
+
             });
 
         </script>
@@ -143,7 +469,7 @@
             </div>
             <div role="main" class="ui-content">
                 <div id="chart">
-                <svg id="chartCanvas"></svg>
+                    <svg id="chartCanvas"></svg>
                 </div>
 
             </div>
